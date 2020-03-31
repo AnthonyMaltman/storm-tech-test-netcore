@@ -15,12 +15,23 @@ namespace Todo.Data.Entities {
 
         protected TodoItem() { }
 
-        public TodoItem(int todoListId, string responsiblePartyId, string title, Importance importance)
+        public TodoItem(int todoListId, string responsiblePartyId, string title, Importance importance, bool isDone = false)
         {
             TodoListId = todoListId;
             ResponsiblePartyId = responsiblePartyId;
             Title = title;
             Importance = importance;
+            IsDone = isDone;
+        }
+
+        public TodoItem(int todoListId, IdentityUser responsibleParty, string title, Importance importance, bool isDone = false)
+        {
+            TodoListId = todoListId;
+            ResponsibleParty = responsibleParty;
+            ResponsiblePartyId = responsibleParty.Id;
+            Title = title;
+            Importance = importance;
+            IsDone = isDone;
         }
     }
 }

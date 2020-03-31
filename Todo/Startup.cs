@@ -34,6 +34,13 @@ namespace Todo
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.Scan(scan => scan
+                .FromAssemblyOf<Startup>()
+              .AddClasses()
+                  .AsImplementedInterfaces()
+                  .WithTransientLifetime()
+            );
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));

@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Todo.Data;
 using Todo.Data.Entities;
 using Todo.EntityModelMappers.TodoItems;
 using Todo.Models.TodoItems;
+using Todo.Repositories;
 using Todo.Services;
 
 namespace Todo.Controllers
@@ -12,17 +12,17 @@ namespace Todo.Controllers
     [Authorize]
     public class TodoItemController : Controller
     {
-        private readonly ApplicationDbContext dbContext;
+        private readonly ITodoRepository _toDoRepository;
 
-        public TodoItemController(ApplicationDbContext dbContext)
+        public TodoItemController(ITodoRepository toDoRepository)
         {
-            this.dbContext = dbContext;
+            _toDoRepository = toDoRepository;
         }
 
         [HttpGet]
         public IActionResult Create(int todoListId)
         {
-            var todoList = dbContext.SingleTodoList(todoListId);
+            var todoList = _toDoRepository.GetTodoList(todoListId);
             var fields = TodoItemCreateFieldsFactory.Create(todoList, User.Id());
             return View(fields);
         }
@@ -35,8 +35,7 @@ namespace Todo.Controllers
 
             var item = new TodoItem(fields.TodoListId, fields.ResponsiblePartyId, fields.Title, fields.Importance);
 
-            await dbContext.AddAsync(item);
-            await dbContext.SaveChangesAsync();
+            await _toDoRepository.AddAsync(item);
 
             return RedirectToListDetail(fields.TodoListId);
         }
@@ -44,7 +43,7 @@ namespace Todo.Controllers
         [HttpGet]
         public IActionResult Edit(int todoItemId)
         {
-            var todoItem = dbContext.SingleTodoItem(todoItemId);
+            var todoItem = _toDoRepository.GetTodoItem(todoItemId);
             var fields = TodoItemEditFieldsFactory.Create(todoItem);
             return View(fields);
         }
@@ -55,12 +54,11 @@ namespace Todo.Controllers
         {
             if (!ModelState.IsValid) { return View(fields); }
 
-            var todoItem = dbContext.SingleTodoItem(fields.TodoItemId);
+            var todoItem = _toDoRepository.GetTodoItem(fields.TodoItemId);
 
             TodoItemEditFieldsFactory.Update(fields, todoItem);
 
-            dbContext.Update(todoItem);
-            await dbContext.SaveChangesAsync();
+            await _toDoRepository.UpdateAsync(todoItem);
 
             return RedirectToListDetail(todoItem.TodoListId);
         }

@@ -1,12 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Todo.Data;
 using Todo.Data.Entities;
 using Todo.EntityModelMappers.TodoLists;
 using Todo.Models.TodoLists;
+using Todo.Repositories;
 using Todo.Services;
 
 namespace Todo.Controllers
@@ -14,27 +12,27 @@ namespace Todo.Controllers
     [Authorize]
     public class TodoListController : Controller
     {
-        private readonly ApplicationDbContext dbContext;
-        private readonly IUserStore<IdentityUser> userStore;
+        private readonly ITodoRepository _toDoRepository;
+        private readonly IUserStore _userStore;
 
-        public TodoListController(ApplicationDbContext dbContext, IUserStore<IdentityUser> userStore)
+        public TodoListController(ITodoRepository todoRepository, IUserStore userStore)
         {
-            this.dbContext = dbContext;
-            this.userStore = userStore;
+            _toDoRepository = todoRepository;
+            _userStore = userStore;
         }
 
         public IActionResult Index()
         {
             var userId = User.Id();
-            var todoLists = dbContext.RelevantTodoLists(userId);
+            var todoLists = _toDoRepository.GetRelevantTodoLists(userId);
             var viewmodel = TodoListIndexViewmodelFactory.Create(todoLists);
             return View(viewmodel);
         }
 
-        public IActionResult Detail(int todoListId)
+        public IActionResult Detail(int todoListId, bool displayDoneItems = true)
         {
-            var todoList = dbContext.SingleTodoList(todoListId);
-            var viewmodel = TodoListDetailViewmodelFactory.Create(todoList);
+            var todoList = _toDoRepository.GetTodoList(todoListId);
+            var viewmodel = TodoListDetailViewmodelFactory.Create(todoList, displayDoneItems);
             return View(viewmodel);
         }
 
@@ -50,12 +48,11 @@ namespace Todo.Controllers
         {
             if (!ModelState.IsValid) { return View(fields); }
 
-            var currentUser = await userStore.FindByIdAsync(User.Id(), CancellationToken.None);
+            var currentUser = await _userStore.GetUserAsync(User.Id());
 
             var todoList = new TodoList(currentUser, fields.Title);
 
-            await dbContext.AddAsync(todoList);
-            await dbContext.SaveChangesAsync();
+            await _toDoRepository.AddAsync(todoList);
 
             return RedirectToAction("Create", "TodoItem", new {todoList.TodoListId});
         }
