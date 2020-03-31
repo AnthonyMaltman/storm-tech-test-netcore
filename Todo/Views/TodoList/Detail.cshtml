@@ -5,6 +5,12 @@
 
 @{
     ViewData["Title"] = $"List: {Model.Title}";
+
+    var TodoItems = Model.Items.OrderBy(x => x.Importance);
+    if (Model.OrderByRank)
+    {
+        TodoItems = Model.Items.OrderBy(x => x.Importance).ThenBy(x => x.Rank);
+    }
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -17,11 +23,12 @@
             <a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
                 <strong>Add New Item</strong>
             </a>
-                
-            <a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(!Model.DisplayDoneItems)">@(Model.DisplayDoneItems ? "Hide Done Items" : "Show all")</a>
+
+            <a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(!Model.DisplayDoneItems)" asp-route-orderByRank="@(Model.OrderByRank)">@(Model.DisplayDoneItems ? "Hide Done Items" : "Show all")</a>
+            <a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(Model.DisplayDoneItems)" asp-route-orderByRank="@(!Model.OrderByRank)">@(Model.OrderByRank ? "Order By Input" : "Order By Rank")</a>
         </li>
 
-        @foreach (var item in Model.Items.OrderBy(x => x.Importance))
+        @foreach (var item in TodoItems)
         {
             string contextualClass;
             switch (item.Importance)
@@ -40,29 +47,28 @@
             <li class="list-group-item @contextualClass">
                 
                 <div class="row">
+                    <div class="col-md-8">
+                        <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@item.TodoItemId">
 
-                <div class="col-md-8">
-                    <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@item.TodoItemId">
+                            @if (item.IsDone)
+                            {
+                                <s>@item.Title</s>
+                            }
+                            else
+                            {
+                                <text>@item.Title</text>
+                            }
+                        </a>
+                    </div>
 
-                        @if (item.IsDone)
-                        {
-                            <s>@item.Title</s>
-                        }
-                        else
-                        {
-                            <text>@item.Title</text>
-                        }
-                    </a>
-                </div>
+                    <div class="col-md-4 text-right">
+                        <small>
+                            @item.ResponsibleParty.UserName
 
-                <div class="col-md-4 text-right">
-                    <small>
-                        @item.ResponsibleParty.UserName
+                            <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
 
-                        <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30"/>
-
-                    </small>
-                </div>
+                        </small>
+                    </div>
                 </div>
 
             </li>

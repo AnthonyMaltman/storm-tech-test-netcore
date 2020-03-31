@@ -29,10 +29,10 @@ namespace Todo.Controllers
             return View(viewmodel);
         }
 
-        public IActionResult Detail(int todoListId, bool displayDoneItems = true)
+        public IActionResult Detail(int todoListId, bool displayDoneItems = true, bool orderByRank = false)
         {
             var todoList = _toDoRepository.GetTodoList(todoListId);
-            var viewmodel = TodoListDetailViewmodelFactory.Create(todoList, displayDoneItems);
+            var viewmodel = TodoListDetailViewmodelFactory.Create(todoList, displayDoneItems, orderByRank);
             return View(viewmodel);
         }
 

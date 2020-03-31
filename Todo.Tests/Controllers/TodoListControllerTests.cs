@@ -19,11 +19,11 @@ namespace Todo.Tests.Controllers
         {
             var user = new IdentityUser("alice@example.com");
             var todoList = new TodoList(user, "shopping");
-            todoList.Items.Add(new TodoItem(1, user, "Get eggs", Importance.High, false));
-            todoList.Items.Add(new TodoItem(1, user, "Get bread", Importance.High, true));
-            todoList.Items.Add(new TodoItem(1, user, "Get milk", Importance.High, false));
+            todoList.Items.Add(new TodoItem(1, user, "Get eggs", Importance.High, 1, false));
+            todoList.Items.Add(new TodoItem(1, user, "Get bread", Importance.High, 2, true));
+            todoList.Items.Add(new TodoItem(1, user, "Get milk", Importance.High, 3, false));
 
-            var todo = TodoListDetailViewmodelFactory.Create(todoList, true);
+            var todo = TodoListDetailViewmodelFactory.Create(todoList, true, false);
 
             var userStore = new Mock<IUserStore>();
 
@@ -44,11 +44,11 @@ namespace Todo.Tests.Controllers
         {
             var user = new IdentityUser("alice@example.com");
             var todoList = new TodoList(user, "shopping");
-            todoList.Items.Add(new TodoItem(1, user, "Get eggs", Importance.High, false));
-            todoList.Items.Add(new TodoItem(1, user, "Get bread", Importance.High, true));
-            todoList.Items.Add(new TodoItem(1, user, "Get milk", Importance.High, false));
+            todoList.Items.Add(new TodoItem(1, user, "Get eggs", Importance.High, 1, false));
+            todoList.Items.Add(new TodoItem(1, user, "Get bread", Importance.High, 2, true));
+            todoList.Items.Add(new TodoItem(1, user, "Get milk", Importance.High, 3, false));
 
-            var todo = TodoListDetailViewmodelFactory.Create(todoList, true);
+            var todo = TodoListDetailViewmodelFactory.Create(todoList, true, false);
 
             var userStore = new Mock<IUserStore>();
 
