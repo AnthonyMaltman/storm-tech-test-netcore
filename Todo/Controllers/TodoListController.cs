@@ -83,11 +83,14 @@ namespace Todo.Controllers
 
                 foreach(var todoItem in todoList.Items)
                 {
-                    todoItem.Rank = Items.Single(x => x.TodoItemId == todoItem.TodoItemId).Rank;
-                    await _toDoRepository.UpdateAsync(todoItem);
-                }
+                    var updateItem = Items.SingleOrDefault(x => x.TodoItemId == todoItem.TodoItemId);
 
-                todoList = _toDoRepository.GetTodoList(TodoListId);
+                    if (updateItem != null)
+                    {
+                        todoItem.Rank = updateItem.Rank;
+                        await _toDoRepository.UpdateAsync(todoItem);
+                    }
+                }
 
                 return Json(new { success = "success" });
             }

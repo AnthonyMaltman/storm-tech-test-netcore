@@ -63,39 +63,39 @@
                 function successFunc(data, status) {
                 }
                 function errorFunc(data) {
-                    alert(data);
+                    alert(data.error);
                 }
             });
-        });
+      
+            $(function () {
+                $(".list-group").sortable({
+                    stop: function (event, ui) {
 
-        $(function () {
-            $(".list-group").sortable({
-                stop: function (event, ui) {
+                        $(".list-group li").each(function (index, element) {
+                            var hiddenInput = $(element).find(".Rank");
+                            hiddenInput.val(index);
+                        });
 
-                    $(".list-group li").each(function (index, element) {
-                        var hiddenInput = $(element).find(".Rank");
-                        hiddenInput.val(index);
-                    });
+                        var form = $("#saveRankForm").serialize();
 
-                    var form = $("#saveRankForm").serialize();
+                        $.ajax({
+                            data: form,
+                            dataType: 'json',
+                            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                            type: "POST",
+                            url: '@Url.Action("SaveRankOrder")',
+                            success: successFunc,
+                            error: errorFunc
+                        });
 
-                    $.ajax({
-                        data: form,
-                        dataType: 'json',
-                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                        type: "POST",
-                        url: '@Url.Action("SaveRankOrder")',
-                        success: successFunc,
-                        error: errorFunc
-                    });
+                        function successFunc(data, status) {
+                        }
 
-                    function successFunc(data, status) {
+                        function errorFunc(data) {
+                            alert(data.error);
+                        }
                     }
-
-                    function errorFunc(data) {
-                        alert(data);
-                    }
-                }
+                });
             });
         });
 
