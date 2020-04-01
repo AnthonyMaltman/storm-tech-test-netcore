@@ -1,8 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Todo.Data.Entities;
+using Todo.EntityModelMappers.TodoItems;
 using Todo.EntityModelMappers.TodoLists;
+using Todo.Models.TodoItems;
 using Todo.Models.TodoLists;
 using Todo.Repositories;
 using Todo.Services;
@@ -32,7 +35,9 @@ namespace Todo.Controllers
         public IActionResult Detail(int todoListId, bool displayDoneItems = true, bool orderByRank = false)
         {
             var todoList = _toDoRepository.GetTodoList(todoListId);
+
             var viewmodel = TodoListDetailViewmodelFactory.Create(todoList, displayDoneItems, orderByRank);
+
             return View(viewmodel);
         }
 
@@ -40,6 +45,26 @@ namespace Todo.Controllers
         public IActionResult Create()
         {
             return View(new TodoListFields());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTodoItem(TodoItemCreateFields fields)
+        {
+            var item = new TodoItem(fields.TodoListId, fields.ResponsiblePartyId, fields.Title, fields.Importance, 0);
+
+            try
+            {
+                await _toDoRepository.AddAsync(item);
+
+                return Json(new { success = "success" });
+            }
+            catch(Exception ex)
+            {
+                return Json(new { error = "could not create todo item." });
+            }
+
+            
         }
 
         [HttpPost]
