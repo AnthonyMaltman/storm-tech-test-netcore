@@ -1,5 +1,4 @@
-﻿@using Todo.Controllers
-@using Todo.Data.Entities
+﻿@using Todo.Data.Entities
 @using Todo.Data
 @using Todo.Services
 @using Todo.Views.TodoItem
@@ -62,13 +61,44 @@
                 });
 
                 function successFunc(data, status) {
-                    alert(data);
                 }
                 function errorFunc(data) {
                     alert(data);
                 }
             });
         });
+
+        $(function () {
+            $(".list-group").sortable({
+                stop: function (event, ui) {
+
+                    $(".list-group li").each(function (index, element) {
+                        var hiddenInput = $(element).find(".Rank");
+                        hiddenInput.val(index);
+                    });
+
+                    var form = $("#saveRankForm").serialize();
+
+                    $.ajax({
+                        data: form,
+                        dataType: 'json',
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        type: "POST",
+                        url: '@Url.Action("SaveRankOrder")',
+                        success: successFunc,
+                        error: errorFunc
+                    });
+
+                    function successFunc(data, status) {
+                    }
+
+                    function errorFunc(data) {
+                        alert(data);
+                    }
+                }
+            });
+        });
+
     </script>
 
 <h2>@ViewData["Title"]</h2>
@@ -117,63 +147,76 @@
 </div>
 <div class="col-md-6">
 
-    <ul class="list-group">
+    <form id="saveRankForm" method="post">
 
-        <li class="list-group-item">
-            <div class="row"><a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(!Model.DisplayDoneItems)" asp-route-orderByRank="@(Model.OrderByRank)">@(Model.DisplayDoneItems ? "Hide Done Items" : "Show all")</a>
-            <a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(Model.DisplayDoneItems)" asp-route-orderByRank="@(!Model.OrderByRank)">@(Model.OrderByRank ? "Order By Input" : "Order By Rank")</a></div>
-        </li>
+        @Html.AntiForgeryToken()
 
-        @foreach (var item in TodoItems)
-        {
-            string contextualClass;
-            switch (item.Importance)
-            {
-                case Importance.High:
-                    contextualClass = "list-group-item-danger";
-                    break;
-                case Importance.Low:
-                    contextualClass = "list-group-item-info";
-                    break;
-                default:
-                    contextualClass = "";
-                    break;
-            }
+        @Html.HiddenFor(m => m.TodoListId)
 
-            <li class="list-group-item @contextualClass">
+        <ul class="list-group" id="sortMe">
 
+            <li class="list-group-item">
                 <div class="row">
-                    <div class="col-md-7">
-                        <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@item.TodoItemId">
+                    <a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(!Model.DisplayDoneItems)" asp-route-orderByRank="@(Model.OrderByRank)">@(Model.DisplayDoneItems ? "Hide Done Items" : "Show all")</a>
+                    <a asp-action="Detail" class="btn btn-default pull-right" asp-route-todoListId="@Model.TodoListId" asp-route-displayDoneItems="@(Model.DisplayDoneItems)" asp-route-orderByRank="@(!Model.OrderByRank)">@(Model.OrderByRank ? "Order By Input" : "Order By Rank")</a>
+                </div>
+            </li>
 
-                            @if (item.IsDone)
-                            {
-                                <s>@item.Title</s>
-                            }
-                            else
-                            {
-                                <text>@item.Title</text>
-                            }
-                        </a>
-                    </div>
+            @{ 
+                var items = TodoItems.ToList();
+                for(var i = 0; i < items.Count ; i++)
+                {
+                    string contextualClass;
+                    switch (items[i].Importance)
+                    {
+                        case Importance.High:
+                            contextualClass = "list-group-item-danger";
+                            break;
+                        case Importance.Low:
+                            contextualClass = "list-group-item-info";
+                            break;
+                        default:
+                            contextualClass = "";
+                            break;
+                    }
 
-                    <div class="col-md-5 text-right">
-                        <medium>
-                            <script type='text/javascript'>
-                                GetGravatarPrfile('@Gravatar.GetHash(item.ResponsibleParty.Email)', '@item.TodoItemId')
-                            </script>
+                    <li class="list-group-item @contextualClass">
+                        <div class="row">
 
-                            <div id="@item.TodoItemId">
-                                <div class="name"></div>
-                                <div class="emailAddress">@item.ResponsibleParty.UserName</div>
-                                <img height="40" class="image" src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
+                            @Html.HiddenFor(m => items[i].Rank, new { @class="Rank" })
+                            @Html.HiddenFor(m => items[i].TodoItemId)
+
+                            <div class="col-md-7">
+                                <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@items[i].TodoItemId">
+                                    @if (items[i].IsDone)
+                                    {
+                                        <s>@items[i].Title</s>
+                                    }
+                                    else
+                                    {
+                                        <text>@items[i].Title</text>
+                                    }
+                                </a>
                             </div>
 
-                        </medium>
-                    </div>
-                </div>
+                            <div class="col-md-5 text-right">
+                                <medium>
+                                    <script type='text/javascript'>
+                                    GetGravatarPrfile('@Gravatar.GetHash(items[i].ResponsibleParty.Email)', '@items[i].TodoItemId')
+                                    </script>
 
-            </li>
-        }
-    </ul>
+                                    <div id="@items[i].TodoItemId">
+                                        <div class="name"></div>
+                                        <div class="emailAddress">@items[i].ResponsibleParty.UserName</div>
+                                        <img height="40" class="image" src="https://www.gravatar.com/avatar/@Gravatar.GetHash(items[i].ResponsibleParty.Email)?s=30" />
+                                    </div>
+
+                                </medium>
+                            </div>
+                        </div>
+
+                    </li>
+                }}
+            </ul>
+    </form>
 </div>

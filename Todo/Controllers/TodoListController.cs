@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Todo.Data.Entities;
-using Todo.EntityModelMappers.TodoItems;
+using System.Linq;
 using Todo.EntityModelMappers.TodoLists;
 using Todo.Models.TodoItems;
 using Todo.Models.TodoLists;
@@ -63,8 +64,37 @@ namespace Todo.Controllers
             {
                 return Json(new { error = "could not create todo item." });
             }
+        }
 
-            
+        public class Items
+        {
+            public int TodoItemId { get; set; }
+            public int Rank { get; set; }
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveRankOrder(int TodoListId, IEnumerable<Items> Items)
+        {
+            try
+            {
+                var todoList = _toDoRepository.GetTodoList(TodoListId);
+
+                foreach(var todoItem in todoList.Items)
+                {
+                    todoItem.Rank = Items.Single(x => x.TodoItemId == todoItem.TodoItemId).Rank;
+                    await _toDoRepository.UpdateAsync(todoItem);
+                }
+
+                todoList = _toDoRepository.GetTodoList(TodoListId);
+
+                return Json(new { success = "success" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = "could not save todo item." });
+            }
         }
 
         [HttpPost]
