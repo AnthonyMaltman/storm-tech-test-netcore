@@ -13,6 +13,30 @@
     }
 }
 
+    <script type="text/javascript">
+            function GetGravatarPrfile(emailHash, itemId) {
+                var serviceURL = "https://www.gravatar.com/" + emailHash + ".json";
+
+                $.ajax({
+                    dataType: "jsonp",
+                    type: "GET",
+                    url: serviceURL,
+                    success: successFunc
+                });
+
+                function successFunc(data, status) {
+                    try {
+                        $('#' + itemId + ' .name').html(data.entry[0].displayName);
+                        $('#' + itemId + ' .image').attr('src', data.entry[0].photos[0].value);
+                    }
+                    catch (err) {
+                        $('#' + itemId + ' .name').html('');
+                        $('#' + itemId + ' .image').attr('src', '');
+                    }
+                }
+        };
+    </script>
+
 <h2>@ViewData["Title"]</h2>
 
 <div class="col-md-6">
@@ -47,7 +71,7 @@
             <li class="list-group-item @contextualClass">
                 
                 <div class="row">
-                    <div class="col-md-8">
+                    <div class="col-md-7">
                         <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@item.TodoItemId">
 
                             @if (item.IsDone)
@@ -61,13 +85,19 @@
                         </a>
                     </div>
 
-                    <div class="col-md-4 text-right">
-                        <small>
-                            @item.ResponsibleParty.UserName
+                    <div class="col-md-5 text-right">
+                        <medium>
+                            <script type='text/javascript'>
+                                GetGravatarPrfile('@Gravatar.GetHash(item.ResponsibleParty.Email)', '@item.TodoItemId')
+                            </script>
 
-                            <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
+                            <div id="@item.TodoItemId">
+                                <div class="name"></div>
+                                <div class="emailAddress">@item.ResponsibleParty.UserName</div>
+                                <img height="40" class="image" src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
+                            </div>
 
-                        </small>
+                        </medium>
                     </div>
                 </div>
 
